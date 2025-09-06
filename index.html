@@ -55,6 +55,49 @@
             cursor: pointer;
             border: 2px solid #fff;
         }
+        
+        /* Floating animation for Zinsco character */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-10px) rotate(1deg); }
+            50% { transform: translateY(-20px) rotate(0deg); }
+            75% { transform: translateY(-10px) rotate(-1deg); }
+        }
+        
+        /* Button hover effects */
+        #startBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(0, 255, 204, 0.6);
+        }
+        
+        #optionsBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #startScreen img[alt="ZINSCO"] {
+                max-width: 400px !important;
+            }
+            
+            #startScreen img[alt="Zinsco"] {
+                width: 150px !important;
+            }
+            
+            #startScreen h2 {
+                font-size: 2em !important;
+            }
+            
+            #startScreen p {
+                font-size: 16px !important;
+            }
+            
+            #startScreen button {
+                padding: 15px 30px !important;
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -66,20 +109,39 @@
         Your browser does not support the audio element.
     </audio>
     
-    <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
-        <h1 style="font-size: 4em; color: #00ffcc; margin-bottom: 30px;">ZINSCO'S MOON MISSION</h1>
-        <div style="font-size: 100px; margin: 20px 0;">👾</div>
-        <p style="font-size: 18px; margin-bottom: 30px;">Help Zinsco reach the moon!</p>
-        <div style="background: rgba(0, 255, 204, 0.1); border: 2px solid rgba(0, 255, 204, 0.3); border-radius: 10px; padding: 20px; margin: 20px 0; max-width: 400px;">
-            <p><strong>Controls:</strong></p>
-            <p>🚀 SPACEBAR or CLICK - Activate Jetpack</p>
-            <p>⬅️➡️ ARROW KEYS - Move Left/Right</p>
-            <p>⛽ Collect fuel to keep flying!</p>
-            <p>🪙 Collect coins for points!</p>
+    <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: url('menu_backdrop.png') center center / cover no-repeat, rgba(10, 10, 10, 0.7); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
+        
+        <!-- ZINSCO Logo -->
+        <div style="margin-bottom: 40px;">
+            <img src="zinsco_logo.png" alt="ZINSCO" style="max-width: 600px; width: 90vw; height: auto; filter: drop-shadow(0 0 30px rgba(0, 255, 204, 0.8));">
         </div>
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-            <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">START MISSION</button>
-            <button id="optionsBtn" style="background: linear-gradient(45deg, #666, #999); color: white; border: none; padding: 20px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">OPTIONS</button>
+        
+        <!-- Subtitle -->
+        <h2 style="font-size: 2.5em; color: #00ffcc; margin-bottom: 20px; text-shadow: 0 0 20px rgba(0, 255, 204, 0.6);">MOON MISSION</h2>
+        
+        <!-- Zinsco Character -->
+        <div style="margin: 30px 0;">
+            <img src="zinsco_character.png" alt="Zinsco" style="width: 200px; height: auto; animation: float 3s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(0, 255, 204, 0.4));">
+        </div>
+        
+        <!-- Mission Description -->
+        <p style="font-size: 20px; margin-bottom: 30px; color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);">Help Zinsco reach the moon safely!</p>
+        
+        <!-- Controls Panel -->
+        <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 15px; padding: 25px; margin: 20px 0; max-width: 450px; backdrop-filter: blur(10px);">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; font-size: 18px;">🚀 MISSION CONTROLS</h3>
+            <div style="text-align: left; line-height: 1.8;">
+                <p style="color: #ffffff; margin-bottom: 8px;">🚀 <strong style="color: #00ff88;">SPACEBAR or CLICK</strong> - Activate Jetpack</p>
+                <p style="color: #ffffff; margin-bottom: 8px;">⬅️➡️ <strong style="color: #00ff88;">ARROW KEYS</strong> - Navigate Left/Right</p>
+                <p style="color: #ffffff; margin-bottom: 8px;">⛽ <strong style="color: #00ff88;">FUEL CANISTERS</strong> - Essential for survival</p>
+                <p style="color: #ffffff;">🪙 <strong style="color: #00ff88;">COINS</strong> - Collect for bonus points</p>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 30px;">
+            <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 18px 50px; font-size: 22px; font-weight: 900; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 25px rgba(0, 255, 204, 0.4); transition: all 0.3s ease;">🚀 START MISSION</button>
+            <button id="optionsBtn" style="background: linear-gradient(45deg, #444, #666); color: white; border: none; padding: 18px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transition: all 0.3s ease;">⚙️ OPTIONS</button>
         </div>
     </div>
     

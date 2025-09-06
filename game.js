@@ -15,7 +15,7 @@ window.onresize = makeFullscreen;
 const GRAVITY = 0.4;
 const JETPACK_POWER = -1.0;
 const MAX_VELOCITY = 8;
-const MOON_DISTANCE = 10000;
+const MOON_DISTANCE = 100000; // 100,000 meters - epic journey to the moon!
 const FUEL_CONSUMPTION = 0.08; // Much lower consumption - skill over luck
 const FUEL_REFILL = 40; // Increased refill amount
 
@@ -37,8 +37,6 @@ class Game {
         this.belowBorderTime = 0; // Time spent below border
         this.isBelowBorder = false; // Flag for below border state
         this.borderWarningTime = 180; // 3 seconds at 60fps
-        this.lastFuelDrop = 0; // Timer for fuel drops
-        this.fuelDropInterval = 90; // Drop fuel every 1.5 seconds
         
         // Music system
         this.backgroundMusic = document.getElementById('backgroundMusic');
@@ -48,6 +46,25 @@ class Game {
         // Sound effects system
         this.soundEffectsVolume = 0.7; // Default 70% volume for SFX
         this.soundEffects = {};
+        
+        // Load space backdrop
+        this.backdropImage = new Image();
+        this.backdropImage.src = 'space_backdrop.svg';
+        this.backdropLoaded = false;
+        this.backdropImage.onload = () => {
+            this.backdropLoaded = true;
+            console.log('Space backdrop loaded successfully');
+        };
+        
+        // Shooting stars system (rare, dopamine-inducing background effect)
+        this.shootingStars = [];
+        this.shootingStarTimer = 0;
+        this.shootingStarInterval = 600 + Math.random() * 1200; // 10-30 seconds at 60fps
+        
+        // Viewport-based spawning system
+        this.lastSpawnY = 0; // Track where we last spawned objects
+        this.spawnBuffer = 400; // Distance ahead to spawn objects
+        this.despawnBuffer = 200; // Distance behind to despawn objects
         
         // Game state
         this.isPaused = false;
@@ -185,14 +202,14 @@ class Game {
         this.particles = [];
         this.belowBorderTime = 0; // Reset border timer
         this.isBelowBorder = false;
-        this.lastFuelDrop = 0; // Reset fuel drop timer
+        this.lastSpawnY = 0; // Reset spawn tracking
         
         // Reset player
         zinsco.reset();
         moon.reset();
         
         // Generate level
-        this.generateLevel();
+        // Level generation now handled by viewport spawning system
         
         // Start music if not already playing
         this.startMusic();
@@ -205,60 +222,241 @@ class Game {
         document.getElementById('gameHUD').style.display = 'flex';
     }
     
-    generateLevel() {
-        for (let i = 2; i < 80; i++) {  // More levels for bigger world
-            const yPos = -i * 300; // Spread out more
+    
+    
+    updateShootingStars() {
+        // Increment shooting star timer
+        this.shootingStarTimer++;
+        
+        // Rarely spawn a shooting star for dopamine effect
+        if (this.shootingStarTimer >= this.shootingStarInterval) {
+            this.createShootingStar();
+            this.shootingStarTimer = 0;
+            // Randomize next interval (10-30 seconds)
+            this.shootingStarInterval = 600 + Math.random() * 1200;
+        }
+        
+        // Update existing shooting stars
+        for (let i = this.shootingStars.length - 1; i >= 0; i--) {
+            const star = this.shootingStars[i];
             
-            if (Math.random() < 0.2) { // Fewer obstacles so world feels bigger
-                // 5% chance for ricochet asteroid (rare)
-                if (Math.random() < 0.05) {
-                    this.obstacles.push(new RicochetAsteroid(
-                        Math.random() * (canvas.width - 80) + 40,
-                        yPos
-                    ));
-                } else {
-                    this.obstacles.push(new Asteroid(
-                        Math.random() * (canvas.width - 80) + 40,
-                        yPos
-                    ));
-                }
+            // Update position
+            star.x += star.velocityX;
+            star.y += star.velocityY;
+            
+            // Update trail points
+            star.trail.unshift({x: star.x, y: star.y});
+            if (star.trail.length > star.trailLength) {
+                star.trail.pop();
             }
             
-            if (Math.random() < 0.25) { // Coins
-                this.collectibles.push(new Collectible(
-                    Math.random() * (canvas.width - 40) + 20,
-                    yPos - 50,
-                    'coin'
-                ));
-            }
+            // Decrease life
+            star.life--;
             
-            if (Math.random() < 0.15) { // Static fuel canisters for abundant fuel
-                this.collectibles.push(new Collectible(
-                    Math.random() * (canvas.width - 40) + 20,
-                    yPos - 100,
-                    'fuel'
-                ));
+            // Remove if dead or off screen
+            if (star.life <= 0 || star.y > this.cameraY + canvas.height + 200) {
+                this.shootingStars.splice(i, 1);
             }
         }
     }
     
-    dropFuelCanister() {
-        // Drop fuel canister from top of visible screen
-        const dropX = Math.random() * (canvas.width - 60) + 30; // Random X position
-        const dropY = this.cameraY - 50; // Just above visible screen
+    createShootingStar() {
+        const shootingStar = {
+            x: -50 + Math.random() * (canvas.width * 0.3), // Start from upper left area
+            y: this.cameraY - 100 + Math.random() * 200, // Start above visible area
+            velocityX: 3 + Math.random() * 4, // Fast horizontal movement
+            velocityY: 2 + Math.random() * 3, // Downward movement
+            life: 180 + Math.random() * 120, // 3-5 seconds at 60fps
+            trail: [],
+            trailLength: 15 + Math.random() * 10,
+            brightness: 0.8 + Math.random() * 0.2,
+            color: {
+                h: 0, // Pure white/neutral
+                s: 0, // No saturation - pure white
+                l: 90 + Math.random() * 10 // Very bright white
+            },
+            size: 2 + Math.random() * 2
+        };
         
-        // Create falling fuel canister
-        const fuelCanister = new FallingFuel(dropX, dropY);
-        this.collectibles.push(fuelCanister);
+        this.shootingStars.push(shootingStar);
+        console.log('✨ Shooting star created! Dopamine incoming...');
+    }
+    
+    renderShootingStars() {
+        ctx.save();
         
-        console.log(`Fuel canister dropped at x:${dropX.toFixed(0)}, y:${dropY.toFixed(0)}`);
+        for (const star of this.shootingStars) {
+            if (star.trail.length < 2) continue;
+            
+            // Calculate fade based on remaining life - make more subtle
+            const lifeFactor = star.life / (180 + 120); // Max possible life
+            const alpha = lifeFactor * star.brightness * 0.4; // Reduced opacity for background effect
+            
+            // Draw white trail
+            ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+            ctx.lineWidth = star.size * 0.8; // Slightly thinner
+            ctx.lineCap = 'round';
+            
+            ctx.beginPath();
+            ctx.moveTo(star.trail[0].x, star.trail[0].y);
+            
+            // Create smooth white trail with decreasing opacity
+            for (let i = 1; i < star.trail.length; i++) {
+                const trailAlpha = alpha * (1 - i / star.trail.length) * 0.6;
+                ctx.strokeStyle = `rgba(255, 255, 255, ${trailAlpha})`;
+                ctx.lineTo(star.trail[i].x, star.trail[i].y);
+            }
+            ctx.stroke();
+            
+            // Draw the bright white star head
+            const headGradient = ctx.createRadialGradient(
+                star.x, star.y, 0,
+                star.x, star.y, star.size * 2.5
+            );
+            headGradient.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.8})`);
+            headGradient.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.4})`);
+            headGradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+            
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add subtle white core
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+        }
         
-        // Rarely spawn a ricochet asteroid for dynamic chaos (0.5% chance each fuel drop, lower since fuel drops more often now)
-        if (Math.random() < 0.005 && this.obstacles.length < 15) { // Limit to prevent lag
-            const ricochetX = Math.random() * (canvas.width - 80) + 40;
-            const ricochetY = this.cameraY - 100; // Spawn above visible area
-            this.obstacles.push(new RicochetAsteroid(ricochetX, ricochetY));
-            console.log(`Ricochet asteroid spawned at x:${ricochetX.toFixed(0)}, y:${ricochetY.toFixed(0)}`);
+        ctx.restore();
+    }
+    
+    manageViewportSpawning() {
+        // EMERGENCY: Track function calls to detect loops
+        if (!this.viewportCalls) this.viewportCalls = 0;
+        this.viewportCalls++;
+        
+        if (this.viewportCalls > 200) {
+            console.error(`EMERGENCY: manageViewportSpawning called ${this.viewportCalls} times! Game freeze likely. Stopping.`);
+            this.state = 'gameOver'; // Force stop game to prevent freeze
+            return;
+        }
+        
+        // Reset counter every second
+        if (this.frameCount % 60 === 0) {
+            this.viewportCalls = 0;
+        }
+        
+        const spawnY = this.cameraY - this.spawnBuffer;
+        
+        // SAFETY CHECK: Validate all values before proceeding
+        if (!isFinite(spawnY) || !isFinite(this.lastSpawnY) || !isFinite(this.cameraY)) {
+            console.error(`Invalid viewport values: spawnY=${spawnY}, lastSpawnY=${this.lastSpawnY}, cameraY=${this.cameraY}`);
+            return;
+        }
+        
+        // Spawn objects in chunks as player moves up
+        if (spawnY < this.lastSpawnY) {
+            const chunkSize = 800; // Spawn objects in 800px chunks (much less frequent)
+            const chunksToSpawn = Math.ceil((this.lastSpawnY - spawnY) / chunkSize);
+            
+            // ENHANCED SAFETY CHECK: More aggressive limits
+            if (chunksToSpawn > 20) {
+                console.error(`CRITICAL: chunksToSpawn=${chunksToSpawn} is way too high! Preventing freeze.`);
+                console.log(`Distance: ${this.distance}m, spawnY=${spawnY}, lastSpawnY=${this.lastSpawnY}, cameraY=${this.cameraY}, diff=${this.lastSpawnY - spawnY}`);
+                this.lastSpawnY = spawnY; // Force reset to prevent accumulation
+                return;
+            }
+            
+            const safeChunksToSpawn = Math.min(chunksToSpawn, 5); // Even more conservative - max 5 chunks per frame
+            
+            console.log(`Spawning ${safeChunksToSpawn} chunks at distance ${this.distance}m`);
+            
+            for (let i = 0; i < safeChunksToSpawn; i++) {
+                const chunkY = this.lastSpawnY - (i + 1) * chunkSize;
+                this.spawnChunk(chunkY, chunkSize);
+            }
+            
+            this.lastSpawnY = spawnY;
+        }
+        
+        // Despawn objects that are too far behind
+        this.despawnOutOfBounds();
+    }
+    
+    spawnChunk(chunkY, chunkSize) {
+        // ULTRA-SIMPLE spawning system - no complex calculations
+        
+        // Hard limits to prevent explosion
+        if (this.obstacles.length > 15) return;
+        if (this.collectibles.length > 20) return;
+        
+        // Simple distance-based difficulty (no complex math)
+        const progressPercent = Math.min(100, (this.distance / MOON_DISTANCE) * 100);
+        const difficultyLevel = Math.floor(progressPercent / 20); // 0-5 levels
+        
+        // Ultra-simple spawn chances based on difficulty level
+        const asteroidChances = [0.005, 0.01, 0.015, 0.02, 0.025, 0.03]; // 0.5% to 3%
+        const fuelChances = [0.02, 0.025, 0.03, 0.035, 0.04, 0.045]; // 2% to 4.5%
+        
+        const asteroidChance = asteroidChances[difficultyLevel] || 0.03;
+        const fuelChance = fuelChances[difficultyLevel] || 0.045;
+        
+        // Spawn 1 asteroid max per chunk
+        if (Math.random() < asteroidChance) {
+            const x = Math.random() * (canvas.width - 100) + 50;
+            const y = chunkY + Math.random() * chunkSize;
+            this.obstacles.push(new Asteroid(x, y));
+        }
+        
+        // Spawn 1 fuel max per chunk  
+        if (Math.random() < fuelChance) {
+            const x = Math.random() * (canvas.width - 40) + 20;
+            const y = chunkY + Math.random() * chunkSize;
+            this.collectibles.push(new Collectible(x, y, 'fuel'));
+        }
+        
+        // Spawn 1 coin max per chunk (rare)
+        if (Math.random() < 0.008) {
+            const x = Math.random() * (canvas.width - 40) + 20;
+            const y = chunkY + Math.random() * chunkSize;
+            this.collectibles.push(new Collectible(x, y, 'coin'));
+        }
+        
+        console.log(`Simple spawn: Level ${difficultyLevel}, Objects: ${this.obstacles.length}/${this.collectibles.length}`);
+    }
+    
+    despawnOutOfBounds() {
+        const despawnY = this.cameraY + canvas.height + this.despawnBuffer;
+        
+        // Count objects before cleanup
+        const obstaclesBefore = this.obstacles.length;
+        const collectiblesBefore = this.collectibles.length;
+        const particlesBefore = this.particles.length;
+        
+        // Remove obstacles that are too far behind
+        this.obstacles = this.obstacles.filter(obstacle => {
+            return obstacle.y < despawnY;
+        });
+        
+        // Remove collectibles that are too far behind
+        this.collectibles = this.collectibles.filter(collectible => {
+            return collectible.y < despawnY;
+        });
+        
+        // Remove particles that are too far behind
+        this.particles = this.particles.filter(particle => {
+            return particle.y < despawnY;
+        });
+        
+        // Log cleanup if significant
+        const obstaclesRemoved = obstaclesBefore - this.obstacles.length;
+        const collectiblesRemoved = collectiblesBefore - this.collectibles.length;
+        const particlesRemoved = particlesBefore - this.particles.length;
+        
+        if (obstaclesRemoved > 0 || collectiblesRemoved > 0 || particlesRemoved > 0) {
+            console.log(`Cleanup: Removed ${obstaclesRemoved} obstacles, ${collectiblesRemoved} collectibles, ${particlesRemoved} particles`);
         }
     }
     
@@ -266,6 +464,20 @@ class Game {
         if (this.state !== 'playing' || this.isPaused) return;
         
         this.frameCount++;
+        
+        // EMERGENCY Performance monitoring - more frequent near crash zone
+        const isNearCrashZone = this.distance >= 400 && this.distance <= 600;
+        const debugInterval = isNearCrashZone ? 60 : 600; // Every second in crash zone, every 10s otherwise
+        
+        if (this.frameCount % debugInterval === 0) {
+            const ricochetCount = this.obstacles.filter(obs => obs.isRicochet).length;
+            const regularCount = this.obstacles.length - ricochetCount;
+            const performanceStatus = isNearCrashZone ? "🚨 CRASH ZONE" : "✅ Normal";
+            console.log(`${performanceStatus} | Distance: ${this.distance.toFixed(0)}m | Objects: ${this.obstacles.length} obstacles, ${this.particles.length} particles, ${this.collectibles.length} collectibles | Camera: ${this.cameraY.toFixed(0)} | SpawnCalls: ${this.spawnChunkCalls || 0} | ViewportCalls: ${this.viewportCalls || 0}`);
+        }
+        
+        // Update shooting stars (rare background effect)
+        this.updateShootingStars();
         
         // Update player
         zinsco.update();
@@ -276,11 +488,8 @@ class Game {
             this.cameraY = targetCameraY;
         }
         
-        // Drop fuel canisters from sky consistently
-        if (this.frameCount - this.lastFuelDrop > this.fuelDropInterval) {
-            this.dropFuelCanister();
-            this.lastFuelDrop = this.frameCount;
-        }
+        // Viewport-based spawning system - spawn objects just above visible area
+        this.manageViewportSpawning();
         
         // Calculate distance
         const startingY = canvas.height * 0.2;
@@ -295,7 +504,7 @@ class Game {
             }
         });
         
-        // Update obstacles
+        // Update obstacles (viewport system handles spawning/despawning)
         this.obstacles = this.obstacles.filter(obstacle => {
             // Handle ricochet asteroids differently
             if (obstacle.isRicochet) {
@@ -305,11 +514,6 @@ class Game {
                 }
             } else {
                 obstacle.update();
-                
-                // Regular asteroids are removed when they go off-screen
-                if (obstacle.y - this.cameraY > canvas.height + 100) {
-                    return false;
-                }
             }
             
             // Check collisions for all asteroids
@@ -420,10 +624,7 @@ class Game {
             ));
         }
         
-        // Generate more level
-        if (this.obstacles.length < 20) {
-            this.generateLevel();
-        }
+        // Level generation now handled by viewport spawning system
         
         // Update moon
         moon.update(this.distance);
@@ -494,16 +695,26 @@ class Game {
     }
     
     render() {
-        // Clear canvas
-        ctx.fillStyle = '#000011';
+        // Clear canvas with space color
+        ctx.fillStyle = '#0a0520';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Draw gradient background
-        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        gradient.addColorStop(0, 'rgba(10, 10, 20, 0.8)');
-        gradient.addColorStop(1, 'rgba(40, 20, 60, 0.8)');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Draw space backdrop if loaded
+        if (this.backdropLoaded) {
+            // Draw the backdrop to cover the entire canvas
+            ctx.drawImage(this.backdropImage, 0, 0, canvas.width, canvas.height);
+            // Draw shooting stars immediately after backdrop (deepest background layer)
+            this.renderShootingStars();
+        } else {
+            // Fallback gradient while backdrop loads
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, 'rgba(10, 10, 20, 0.8)');
+            gradient.addColorStop(1, 'rgba(40, 20, 60, 0.8)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Draw shooting stars after fallback gradient too
+            this.renderShootingStars();
+        }
         
         // Apply camera transform
         ctx.save();
@@ -1032,20 +1243,23 @@ class Asteroid {
         this.x = x;
         this.y = y;
         
-        // More varied size ranges - small, medium, large asteroids
+        // More varied size ranges - small, medium, large asteroids with more extreme differences
         const sizeType = Math.random();
         if (sizeType < 0.3) {
-            // Small asteroids (30% chance)
-            this.width = 25 + Math.random() * 15;
-            this.height = 25 + Math.random() * 15;
+            // Small asteroids (30% chance) - much smaller
+            this.width = 20 + Math.random() * 20;  // 20-40px
+            this.height = 20 + Math.random() * 20;
+            this.sizeCategory = 'small';
         } else if (sizeType < 0.7) {
             // Medium asteroids (40% chance)
-            this.width = 40 + Math.random() * 25;
-            this.height = 40 + Math.random() * 25;
+            this.width = 45 + Math.random() * 30;  // 45-75px
+            this.height = 45 + Math.random() * 30;
+            this.sizeCategory = 'medium';
         } else {
-            // Large asteroids (30% chance)
-            this.width = 65 + Math.random() * 25;
-            this.height = 65 + Math.random() * 25;
+            // Large asteroids (30% chance) - much larger
+            this.width = 80 + Math.random() * 40;  // 80-120px
+            this.height = 80 + Math.random() * 40;
+            this.sizeCategory = 'large';
         }
         
         // Shape variation parameters
@@ -1082,8 +1296,16 @@ class Asteroid {
         const radiusX = this.width / 2;
         const radiusY = this.height / 2 * this.aspectRatio;
         
-        // Main asteroid body - brown/orange color
-        ctx.fillStyle = '#B8860B'; // Dark golden rod
+        // Different colors based on size for more visual variety
+        let asteroidColor;
+        if (this.sizeCategory === 'small') {
+            asteroidColor = '#A0522D'; // Saddle brown (smaller, lighter)
+        } else if (this.sizeCategory === 'medium') {
+            asteroidColor = '#B8860B'; // Dark golden rod (medium)
+        } else {
+            asteroidColor = '#8B4513'; // Darker brown (large, imposing)
+        }
+        ctx.fillStyle = asteroidColor;
         ctx.beginPath();
         
         // Create irregular asteroid shape with variable points and variation
@@ -1250,10 +1472,10 @@ class RicochetAsteroid extends Asteroid {
         this.y += this.velocityY;
         this.rotation += this.rotationSpeed;
         
-        // Check border collisions and ricochet (relative to screen, not camera)
+        // Check border collisions and ricochet with fixed boundaries to prevent accumulation
         let bounced = false;
-        const screenTop = game.cameraY;
-        const screenBottom = game.cameraY + canvas.height;
+        const visibleTop = game.cameraY - 200; // Allow some bouncing above visible area
+        const visibleBottom = game.cameraY + canvas.height + 200; // Allow some bouncing below visible area
         
         // Left border
         if (this.x < 0) {
@@ -1269,18 +1491,25 @@ class RicochetAsteroid extends Asteroid {
             bounced = true;
         }
         
-        // Top border (relative to visible screen)
-        if (this.y < screenTop) {
-            this.y = screenTop;
+        // Top border with buffer zone
+        if (this.y < visibleTop) {
+            this.y = visibleTop;
             this.velocityY = Math.abs(this.velocityY);
             bounced = true;
         }
         
-        // Bottom border (relative to visible screen)
-        if (this.y + this.height > screenBottom) {
-            this.y = screenBottom - this.height;
+        // Bottom border with buffer zone
+        if (this.y + this.height > visibleBottom) {
+            this.y = visibleBottom - this.height;
             this.velocityY = -Math.abs(this.velocityY);
             bounced = true;
+        }
+        
+        // Add despawn condition if asteroid gets too far from player
+        const playerY = zinsco.y;
+        const distanceFromPlayer = Math.abs(this.y - playerY);
+        if (distanceFromPlayer > canvas.height * 2) {
+            return false; // Remove if too far from player
         }
         
         // Check collisions with other asteroids for ricocheting
@@ -1376,6 +1605,7 @@ class RicochetAsteroid extends Asteroid {
         // Remove asteroid if it's bounced too many times and is slow
         const currentSpeed = Math.sqrt(this.velocityX * this.velocityX + this.velocityY * this.velocityY);
         if (this.bounceCount >= this.maxBounces || currentSpeed < 0.5) {
+            console.log(`Ricochet asteroid removed: bounces=${this.bounceCount}/${this.maxBounces}, speed=${currentSpeed.toFixed(2)}`);
             return false; // Signal for removal
         }
         
