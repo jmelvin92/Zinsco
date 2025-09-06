@@ -2,17 +2,36 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Zinsco's Moon Mission 🚀</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Mobile PWA optimizations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-title" content="Zinsco Moon Mission">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; /* Remove blue highlight on mobile */
+            -webkit-touch-callout: none; /* Disable callout on long-press */
+            -webkit-user-select: none; /* Prevent text selection */
+            user-select: none;
+        }
         html, body { 
             width: 100vw; 
             height: 100vh; 
             overflow: hidden; 
             margin: 0; 
-            padding: 0; 
+            padding: 0;
+            /* Mobile optimizations */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: none; /* Prevent pull-to-refresh */
+            position: fixed; /* Prevent mobile browser UI changes affecting layout */
         }
         canvas { 
             position: absolute; 
@@ -75,10 +94,66 @@
             box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
         }
         
-        /* Responsive design */
-        @media (max-width: 768px) {
+        /* Mobile-first responsive design */
+        
+        /* Touch-friendly buttons */
+        button {
+            min-height: 44px; /* iOS recommended touch target size */
+            min-width: 44px;
+            touch-action: manipulation; /* Prevent double-tap zoom */
+        }
+        
+        /* Small mobile devices (320px-479px) */
+        @media (max-width: 479px) {
+            #startScreen {
+                padding: 10px !important;
+                justify-content: flex-start !important;
+                padding-top: 5vh !important;
+            }
+            
+            #startScreen img[alt="ZINSCO"] {
+                max-width: 280px !important;
+                width: 85vw !important;
+                margin-bottom: 15px !important;
+            }
+            
+            #startScreen h2 {
+                font-size: 1.5em !important;
+                margin-bottom: 10px !important;
+            }
+            
+            #startScreen img[alt="Zinsco"] {
+                width: 120px !important;
+                margin: 15px 0 !important;
+            }
+            
+            #startScreen p {
+                font-size: 14px !important;
+                margin-bottom: 20px !important;
+                padding: 0 10px !important;
+            }
+            
+            #startScreen .action-buttons {
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 15px !important;
+                padding: 0 20px !important;
+            }
+            
+            #startScreen button {
+                padding: 16px 25px !important;
+                font-size: 16px !important;
+                width: 100% !important;
+                max-width: 280px !important;
+                font-weight: 800 !important;
+            }
+        }
+        
+        /* Medium mobile devices (480px-767px) */
+        @media (min-width: 480px) and (max-width: 767px) {
             #startScreen img[alt="ZINSCO"] {
                 max-width: 400px !important;
+                width: 80vw !important;
             }
             
             #startScreen img[alt="Zinsco"] {
@@ -94,14 +169,103 @@
             }
             
             #startScreen button {
-                padding: 15px 30px !important;
+                padding: 16px 35px !important;
+                font-size: 17px !important;
+                min-width: 180px !important;
+            }
+        }
+        
+        /* Tablet devices (768px-1023px) */
+        @media (min-width: 768px) and (max-width: 1023px) {
+            #startScreen img[alt="ZINSCO"] {
+                max-width: 500px !important;
+            }
+            
+            #startScreen img[alt="Zinsco"] {
+                width: 180px !important;
+            }
+        }
+        
+        /* Mobile HUD optimization */
+        @media (max-width: 767px) {
+            #gameHUD {
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+                top: 10px !important;
+                left: 10px !important;
+                right: 10px !important;
+            }
+            
+            #gameHUD > div {
+                flex: 1 1 calc(50% - 5px) !important;
+                min-width: calc(50% - 5px) !important;
+                padding: 8px 10px !important;
+            }
+            
+            #gameHUD span {
+                font-size: 10px !important;
+            }
+            
+            #gameHUD span:not(.label) {
                 font-size: 16px !important;
+            }
+        }
+        
+        /* Options screen mobile optimization */
+        @media (max-width: 767px) {
+            #optionsScreen h2, #pauseOverlay h2 {
+                font-size: 2em !important;
+                margin-bottom: 20px !important;
+            }
+            
+            #optionsScreen > div, #pauseOverlay > div:nth-child(3) {
+                min-width: auto !important;
+                width: 90vw !important;
+                max-width: 400px !important;
+                padding: 20px !important;
+            }
+            
+            #optionsScreen button, #pauseOverlay button {
+                padding: 14px 25px !important;
+                font-size: 16px !important;
+                min-height: 48px !important;
+            }
+            
+            #pauseOverlay .pause-buttons {
+                flex-direction: column !important;
+                gap: 10px !important;
+                width: 100% !important;
+            }
+            
+            #pauseOverlay .pause-buttons button {
+                width: 100% !important;
+                max-width: 280px !important;
+            }
+        }
+        
+        /* Game Over/Victory screens mobile */
+        @media (max-width: 767px) {
+            #gameOverScreen h2, #victoryScreen h2 {
+                font-size: 2.2em !important;
+                margin-bottom: 15px !important;
+            }
+            
+            #gameOverScreen p, #victoryScreen p {
+                font-size: 16px !important;
+                margin: 10px 0 !important;
+            }
+            
+            #gameOverScreen button, #victoryScreen button {
+                padding: 16px 30px !important;
+                font-size: 18px !important;
+                margin: 10px !important;
+                min-height: 50px !important;
             }
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" style="touch-action: none;"></canvas>
     
     <!-- Background Music -->
     <audio id="backgroundMusic" loop>
@@ -128,7 +292,7 @@
         <p style="font-size: 20px; margin-bottom: 40px; color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);">Help Zinsco reach the moon safely!</p>
         
         <!-- Action Buttons -->
-        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 30px;">
+        <div class="action-buttons" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 30px;">
             <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 18px 50px; font-size: 22px; font-weight: 900; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 25px rgba(0, 255, 204, 0.4); transition: all 0.3s ease;">🚀 START MISSION</button>
             <button id="optionsBtn" style="background: linear-gradient(45deg, #444, #666); color: white; border: none; padding: 18px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transition: all 0.3s ease;">⚙️ OPTIONS</button>
         </div>
@@ -198,7 +362,7 @@
             </div>
         </div>
         
-        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+        <div class="pause-buttons" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
             <button id="resumeBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 15px 40px; font-size: 20px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">▶️ RESUME</button>
             <button id="mainMenuBtn" style="background: linear-gradient(45deg, #ff6600, #ff8800); color: white; border: none; padding: 15px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">MAIN MENU</button>
         </div>
