@@ -103,12 +103,26 @@
             touch-action: manipulation; /* Prevent double-tap zoom */
         }
         
+        /* Mobile backdrop fix */
+        @media (max-width: 767px) {
+            #startScreen {
+                background-size: cover !important;
+                background-position: center center !important;
+                background-attachment: scroll !important;
+                min-height: 100vh !important;
+                min-height: -webkit-fill-available !important;
+            }
+        }
+        
         /* Small mobile devices (320px-479px) */
         @media (max-width: 479px) {
             #startScreen {
-                padding: 10px !important;
-                justify-content: flex-start !important;
-                padding-top: 5vh !important;
+                padding: 20px !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background-attachment: scroll !important;
+                background-size: cover !important;
+                background-position: center center !important;
             }
             
             #startScreen img[alt="ZINSCO"] {
@@ -136,8 +150,12 @@
             #startScreen .action-buttons {
                 flex-direction: column !important;
                 width: 100% !important;
+                max-width: 300px !important;
                 gap: 15px !important;
-                padding: 0 20px !important;
+                padding: 0 !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin: 20px auto !important;
             }
             
             #startScreen button {
@@ -146,6 +164,8 @@
                 width: 100% !important;
                 max-width: 280px !important;
                 font-weight: 800 !important;
+                margin: 0 auto !important;
+                display: block !important;
             }
         }
         
@@ -273,7 +293,7 @@
         Your browser does not support the audio element.
     </audio>
     
-    <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: url('menu_backdrop.png') center center / cover no-repeat, rgba(10, 10, 10, 0.7); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
+    <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: url('menu_backdrop.png') center center / cover no-repeat, rgba(10, 10, 10, 0.7); background-attachment: fixed; color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10; padding: 20px; box-sizing: border-box;">
         
         <!-- ZINSCO Logo -->
         <div style="margin-bottom: 40px;">
@@ -292,7 +312,7 @@
         <p style="font-size: 20px; margin-bottom: 40px; color: #00ff88; text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);">Help Zinsco reach the moon safely!</p>
         
         <!-- Action Buttons -->
-        <div class="action-buttons" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 30px;">
+        <div class="action-buttons" style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: center; margin-top: 30px; width: 100%; max-width: 600px;">
             <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 18px 50px; font-size: 22px; font-weight: 900; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 25px rgba(0, 255, 204, 0.4); transition: all 0.3s ease;">🚀 START MISSION</button>
             <button id="optionsBtn" style="background: linear-gradient(45deg, #444, #666); color: white; border: none; padding: 18px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transition: all 0.3s ease;">⚙️ OPTIONS</button>
         </div>
