@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Zinsco's Moon Mission 🚀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { 
+            width: 100vw; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0; 
+            padding: 0; 
+        }
+        canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100vw !important; 
+            height: 100vh !important; 
+            display: block; 
+            margin: 0; 
+            padding: 0; 
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
+        <h1 style="font-size: 4em; color: #00ffcc; margin-bottom: 30px;">ZINSCO'S MOON MISSION</h1>
+        <div style="font-size: 100px; margin: 20px 0;">👾</div>
+        <p style="font-size: 18px; margin-bottom: 30px;">Help Zinsco reach the moon!</p>
+        <div style="background: rgba(0, 255, 204, 0.1); border: 2px solid rgba(0, 255, 204, 0.3); border-radius: 10px; padding: 20px; margin: 20px 0; max-width: 400px;">
+            <p><strong>Controls:</strong></p>
+            <p>🚀 SPACEBAR or CLICK - Activate Jetpack</p>
+            <p>⬅️➡️ ARROW KEYS - Move Left/Right</p>
+            <p>⛽ Collect fuel to keep flying!</p>
+            <p>🪙 Collect coins for points!</p>
+        </div>
+        <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 20px;">START MISSION</button>
+    </div>
+    
+    <div id="gameOverScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
+        <h2 style="font-size: 3em; color: #ff4444; margin-bottom: 20px;">MISSION FAILED</h2>
+        <p id="failReason" style="font-size: 20px; color: #00ffcc; margin: 20px 0;">You ran out of fuel!</p>
+        <p>Score: <span id="finalScore" style="color: #00ff88; font-weight: 700; font-size: 24px;">0</span></p>
+        <p>Distance: <span id="finalDistance" style="color: #00ff88; font-weight: 700; font-size: 24px;">0</span>m</p>
+        <button id="retryBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 20px;">TRY AGAIN</button>
+    </div>
+    
+    <div id="victoryScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
+        <h2 style="font-size: 3em; color: #00ff88; margin-bottom: 20px;">🌕 MOON REACHED! 🌕</h2>
+        <p style="font-size: 20px; color: #00ffcc; margin: 20px 0;">Zinsco made it to the moon!</p>
+        <p>Final Score: <span id="victoryScore" style="color: #00ff88; font-weight: 700; font-size: 24px;">0</span></p>
+        <p>Fuel Remaining: <span id="victoryFuel" style="color: #00ff88; font-weight: 700; font-size: 24px;">0</span>%</p>
+        <button id="shareBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 15px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 10px;">Share on X</button>
+        <button id="playAgainBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 20px;">PLAY AGAIN</button>
+    </div>
+    
+    <div id="gameHUD" style="position: absolute; top: 20px; left: 20px; right: 20px; display: none; justify-content: space-between; align-items: center; pointer-events: none; z-index: 20; font-family: 'Orbitron', monospace;">
+        <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <span style="font-size: 12px; color: #00ffcc; margin-bottom: 5px;">SCORE</span>
+            <span id="score" style="font-size: 20px; font-weight: 700; color: white;">0</span>
+        </div>
+        <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 12px; color: #00ffcc; margin-bottom: 5px;">FUEL</span>
+            <div style="width: 100px; height: 20px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; overflow: hidden; position: relative;">
+                <div id="fuelLevel" style="height: 100%; background: linear-gradient(90deg, #ff4444, #ffaa00, #00ff88); transition: width 0.3s ease; width: 100%;"></div>
+            </div>
+        </div>
+        <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <span style="font-size: 12px; color: #00ffcc; margin-bottom: 5px;">DISTANCE</span>
+            <span id="distance" style="font-size: 20px; font-weight: 700; color: white;">0m</span>
+        </div>
+        <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center; min-width: 100px;">
+            <span style="font-size: 12px; color: #00ffcc; margin-bottom: 5px;">TO MOON</span>
+            <span id="moonDistance" style="font-size: 20px; font-weight: 700; color: white;">10000m</span>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>

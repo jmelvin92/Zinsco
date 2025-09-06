@@ -1,0 +1,235 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Orbitron', monospace;
+    color: white;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+}
+
+#gameContainer {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+#gameCanvas {
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    width: 100vw !important;
+    height: 100vh !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    background: linear-gradient(180deg, #0a0a0a 0%, #1a1a3e 50%, #462066 100%);
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    text-align: center;
+    z-index: 10;
+}
+
+h1, h2 {
+    font-size: 3em;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #00ffcc, #00ff88, #00ccff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+    text-shadow: 0 0 30px rgba(0, 255, 204, 0.5);
+}
+
+h2 {
+    font-size: 2.5em;
+}
+
+.zinsco-preview {
+    font-size: 100px;
+    margin: 20px 0;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.instructions {
+    background: rgba(0, 255, 204, 0.1);
+    border: 2px solid rgba(0, 255, 204, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    max-width: 400px;
+}
+
+.instructions p {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #00ffcc;
+}
+
+.instructions strong {
+    color: #00ff88;
+    font-size: 16px;
+}
+
+.game-btn {
+    background: linear-gradient(45deg, #00ffcc, #00ff88);
+    color: #0a0a0a;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+    text-transform: uppercase;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px;
+    box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4);
+}
+
+.game-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(0, 255, 204, 0.6);
+}
+
+.game-btn:active {
+    transform: translateY(0);
+}
+
+#gameHUD {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.hud-item {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(0, 255, 204, 0.5);
+    border-radius: 10px;
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px;
+}
+
+.hud-item .label {
+    font-size: 12px;
+    color: #00ffcc;
+    margin-bottom: 5px;
+}
+
+.hud-item .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+}
+
+.fuel-bar {
+    width: 100px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(0, 255, 204, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.fuel-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4444, #ffaa00, #00ff88);
+    transition: width 0.3s ease;
+    width: 100%;
+}
+
+.reason, .victory-msg {
+    font-size: 18px;
+    color: #00ffcc;
+    margin: 20px 0;
+}
+
+#finalScore, #finalDistance, #victoryScore, #victoryFuel {
+    color: #00ff88;
+    font-weight: 700;
+    font-size: 24px;
+}
+
+.share-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(0, 255, 204, 0.1);
+    border-radius: 10px;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2em;
+    }
+    
+    h2 {
+        font-size: 1.8em;
+    }
+    
+    .instructions {
+        font-size: 12px;
+    }
+    
+    .hud-item {
+        min-width: 70px;
+        padding: 8px 10px;
+    }
+    
+    .hud-item .label {
+        font-size: 10px;
+    }
+    
+    .hud-item .value {
+        font-size: 16px;
+    }
+}
