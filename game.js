@@ -12,12 +12,20 @@ makeFullscreen();
 window.onresize = makeFullscreen;
 
 // Game constants
+// Mobile detection for speed adjustments
+const IS_MOBILE = window.innerWidth <= 767 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 const GRAVITY = 0.4;
 const JETPACK_POWER = -1.0;
 const MAX_VELOCITY = 8;
 const MOON_DISTANCE = 100000; // 100,000 meters - epic journey to the moon!
 const FUEL_CONSUMPTION = 0.08; // Much lower consumption - skill over luck
 const FUEL_REFILL = 40; // Increased refill amount
+
+// Mobile-specific speed adjustments
+const MOBILE_SPEED_MODIFIER = IS_MOBILE ? 0.7 : 1.0; // 30% slower on mobile
+const HORIZONTAL_ACCELERATION = (IS_MOBILE ? 0.42 : 0.6) * MOBILE_SPEED_MODIFIER; // Reduced acceleration on mobile
+const MAX_HORIZONTAL_VELOCITY = (IS_MOBILE ? 4 : 6) * MOBILE_SPEED_MODIFIER; // Reduced max speed on mobile
 
 class Game {
     constructor() {
@@ -107,6 +115,12 @@ class Game {
         // Pause screen controls
         document.getElementById('resumeBtn').addEventListener('click', () => { this.playSoundEffect('menuClick'); this.resumeGame(); });
         document.getElementById('mainMenuBtn').addEventListener('click', () => { this.playSoundEffect('menuClick'); this.returnToMainMenu(); });
+        
+        // Mobile pause button
+        document.getElementById('mobilePauseBtn').addEventListener('click', () => {
+            this.playSoundEffect('menuClick');
+            this.handleEscapeKey(); // Use the same logic as ESC key
+        });
         document.getElementById('pauseVolumeSlider').addEventListener('input', (e) => this.setVolume(e.target.value));
         document.getElementById('pauseToggleMusicBtn').addEventListener('click', () => { this.playSoundEffect('menuClick'); this.toggleMusic(); });
         document.getElementById('pauseSfxVolumeSlider').addEventListener('input', (e) => this.setSoundEffectsVolume(e.target.value));
@@ -220,6 +234,7 @@ class Game {
         document.getElementById('victoryScreen').style.display = 'none';
         document.getElementById('optionsScreen').style.display = 'none';
         document.getElementById('gameHUD').style.display = 'flex';
+        document.getElementById('mobilePauseBtn').style.display = 'flex'; // Show mobile pause button during gameplay
     }
     
     
@@ -701,8 +716,27 @@ class Game {
         
         // Draw space backdrop if loaded
         if (this.backdropLoaded) {
-            // Draw the backdrop to cover the entire canvas
-            ctx.drawImage(this.backdropImage, 0, 0, canvas.width, canvas.height);
+            // Draw the backdrop with proper aspect ratio (cover behavior)
+            const imgAspectRatio = this.backdropImage.width / this.backdropImage.height;
+            const canvasAspectRatio = canvas.width / canvas.height;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (imgAspectRatio > canvasAspectRatio) {
+                // Image is wider than canvas - fit by height
+                drawHeight = canvas.height;
+                drawWidth = drawHeight * imgAspectRatio;
+                offsetX = -(drawWidth - canvas.width) / 2;
+                offsetY = 0;
+            } else {
+                // Image is taller than canvas - fit by width
+                drawWidth = canvas.width;
+                drawHeight = drawWidth / imgAspectRatio;
+                offsetX = 0;
+                offsetY = -(drawHeight - canvas.height) / 2;
+            }
+            
+            ctx.drawImage(this.backdropImage, offsetX, offsetY, drawWidth, drawHeight);
             // Draw shooting stars immediately after backdrop (deepest background layer)
             this.renderShootingStars();
         } else {
@@ -779,6 +813,7 @@ class Game {
     gameOver(reason) {
         this.state = 'gameover';
         document.getElementById('gameHUD').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button
         document.getElementById('gameOverScreen').style.display = 'flex';
         document.getElementById('failReason').textContent = reason;
         document.getElementById('finalScore').textContent = this.score;
@@ -789,6 +824,7 @@ class Game {
         this.state = 'victory';
         this.score += Math.floor(zinsco.fuel * 10);
         document.getElementById('gameHUD').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button
         document.getElementById('victoryScreen').style.display = 'flex';
         document.getElementById('victoryScore').textContent = this.score;
         document.getElementById('victoryFuel').textContent = Math.floor(zinsco.fuel) + '%';
@@ -993,6 +1029,7 @@ class Game {
         
         this.isPaused = true;
         document.getElementById('pauseOverlay').style.display = 'flex';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button when pause menu is open
         
         // Sync music volume controls
         const savedMusicVolume = localStorage.getItem('zinscoMusicVolume') || '50';
@@ -1015,6 +1052,7 @@ class Game {
         
         this.isPaused = false;
         document.getElementById('pauseOverlay').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'flex'; // Show mobile pause button when returning to gameplay
         
         console.log('Game resumed');
     }
@@ -1026,6 +1064,7 @@ class Game {
         // Hide all screens
         document.getElementById('pauseOverlay').style.display = 'none';
         document.getElementById('gameHUD').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button
         document.getElementById('startScreen').style.display = 'flex';
         
         // Stop jetpack
@@ -1037,6 +1076,7 @@ class Game {
     returnToMainMenuFromGameOver() {
         this.state = 'menu';
         document.getElementById('gameOverScreen').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button
         document.getElementById('startScreen').style.display = 'flex';
         console.log('Returned to main menu from game over');
     }
@@ -1044,6 +1084,7 @@ class Game {
     returnToMainMenuFromVictory() {
         this.state = 'menu';
         document.getElementById('victoryScreen').style.display = 'none';
+        document.getElementById('mobilePauseBtn').style.display = 'none'; // Hide mobile pause button
         document.getElementById('startScreen').style.display = 'flex';
         console.log('Returned to main menu from victory');
     }
@@ -1089,26 +1130,26 @@ class Zinsco {
         
         if (Math.abs(mouseDirection) > deadZone) {
             if (mouseDirection < -deadZone) {
-                this.velocityX -= 0.6; // Move left toward mouse
+                this.velocityX -= HORIZONTAL_ACCELERATION; // Move left toward mouse (mobile-adjusted)
             } else if (mouseDirection > deadZone) {
-                this.velocityX += 0.6; // Move right toward mouse
+                this.velocityX += HORIZONTAL_ACCELERATION; // Move right toward mouse (mobile-adjusted)
             }
         }
         
         // Keyboard movement (still works as backup)
         if (this.movingLeft) {
-            this.velocityX -= 0.6;
+            this.velocityX -= HORIZONTAL_ACCELERATION;
         }
         if (this.movingRight) {
-            this.velocityX += 0.6;
+            this.velocityX += HORIZONTAL_ACCELERATION;
         }
         
         // Apply friction
         this.velocityX *= 0.9;
         
-        // Limit velocities (faster horizontal speed)
+        // Limit velocities (mobile-adjusted)
         this.velocityY = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, this.velocityY));
-        this.velocityX = Math.max(-6, Math.min(6, this.velocityX)); // Increased for challenge
+        this.velocityX = Math.max(-MAX_HORIZONTAL_VELOCITY, Math.min(MAX_HORIZONTAL_VELOCITY, this.velocityX)); // Mobile-adjusted speed
         
         // Update position
         this.x += this.velocityX;

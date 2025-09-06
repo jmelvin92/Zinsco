@@ -109,89 +109,127 @@
                 background-size: cover !important;
                 background-position: center center !important;
                 background-attachment: scroll !important;
+                background-repeat: no-repeat !important;
                 min-height: 100vh !important;
                 min-height: -webkit-fill-available !important;
+                height: auto !important;
+            }
+            
+            /* Better mobile backdrop handling */
+            @media (max-width: 767px) {
+                #startScreen {
+                    background-image: url('menu_backdrop.png'), linear-gradient(135deg, #0a0a2e 0%, #16213e 50%, #0f3460 100%) !important;
+                    background-size: cover, 100% 100% !important;
+                    background-position: center center, center center !important;
+                    background-blend-mode: overlay !important;
+                }
+            }
+            
+            /* Fallback for very narrow screens where backdrop looks bad */
+            @media (max-width: 479px) and (max-aspect-ratio: 9/16) {
+                #startScreen {
+                    background: linear-gradient(135deg, #0a0a2e 0%, #16213e 50%, #0f3460 100%) !important;
+                    background-size: 100% 100% !important;
+                }
             }
         }
         
         /* Small mobile devices (320px-479px) */
         @media (max-width: 479px) {
             #startScreen {
-                padding: 20px !important;
-                justify-content: center !important;
+                padding: 10px !important;
+                justify-content: flex-start !important;
                 align-items: center !important;
                 background-attachment: scroll !important;
                 background-size: cover !important;
                 background-position: center center !important;
+                overflow-y: auto !important;
+                padding-top: 5vh !important;
+                min-height: 100vh !important;
             }
             
             #startScreen img[alt="ZINSCO"] {
-                max-width: 280px !important;
-                width: 85vw !important;
-                margin-bottom: 15px !important;
-            }
-            
-            #startScreen h2 {
-                font-size: 1.5em !important;
+                max-width: 250px !important;
+                width: 80vw !important;
                 margin-bottom: 10px !important;
             }
             
+            #startScreen h2 {
+                font-size: 1.3em !important;
+                margin-bottom: 8px !important;
+            }
+            
             #startScreen img[alt="Zinsco"] {
-                width: 120px !important;
-                margin: 15px 0 !important;
+                width: 100px !important;
+                margin: 10px 0 !important;
             }
             
             #startScreen p {
                 font-size: 14px !important;
-                margin-bottom: 20px !important;
+                margin-bottom: 15px !important;
                 padding: 0 10px !important;
             }
             
             #startScreen .action-buttons {
                 flex-direction: column !important;
                 width: 100% !important;
-                max-width: 300px !important;
-                gap: 15px !important;
-                padding: 0 !important;
+                max-width: 280px !important;
+                gap: 12px !important;
+                padding: 0 20px !important;
                 align-items: center !important;
                 justify-content: center !important;
-                margin: 20px auto !important;
+                margin: 15px auto 20px auto !important;
             }
             
             #startScreen button {
-                padding: 16px 25px !important;
-                font-size: 16px !important;
+                padding: 14px 20px !important;
+                font-size: 15px !important;
                 width: 100% !important;
-                max-width: 280px !important;
+                max-width: 240px !important;
                 font-weight: 800 !important;
                 margin: 0 auto !important;
                 display: block !important;
+                min-height: 48px !important;
+                box-sizing: border-box !important;
             }
         }
         
         /* Medium mobile devices (480px-767px) */
         @media (min-width: 480px) and (max-width: 767px) {
+            #startScreen {
+                padding: 15px !important;
+                overflow-y: auto !important;
+            }
+            
             #startScreen img[alt="ZINSCO"] {
-                max-width: 400px !important;
-                width: 80vw !important;
+                max-width: 350px !important;
+                width: 75vw !important;
             }
             
             #startScreen img[alt="Zinsco"] {
-                width: 150px !important;
+                width: 140px !important;
             }
             
             #startScreen h2 {
-                font-size: 2em !important;
+                font-size: 1.8em !important;
             }
             
             #startScreen p {
                 font-size: 16px !important;
+                margin-bottom: 20px !important;
+            }
+            
+            #startScreen .action-buttons {
+                margin: 20px auto !important;
+                max-width: 400px !important;
+                gap: 15px !important;
             }
             
             #startScreen button {
-                padding: 16px 35px !important;
-                font-size: 17px !important;
-                min-width: 180px !important;
+                padding: 16px 30px !important;
+                font-size: 16px !important;
+                min-width: 160px !important;
+                min-height: 50px !important;
             }
         }
         
@@ -206,28 +244,147 @@
             }
         }
         
-        /* Mobile HUD optimization */
+        /* Mobile pause button - hidden on desktop */
+        #mobilePauseBtn {
+            display: none;
+        }
+        
+        @media (max-width: 767px) {
+            #mobilePauseBtn {
+                position: absolute !important;
+                bottom: 80px !important; /* Higher to avoid Samsung/Android nav buttons */
+                right: 20px !important;
+                background: rgba(0, 0, 0, 0.8) !important;
+                border: 2px solid rgba(0, 255, 204, 0.7) !important;
+                border-radius: 50% !important;
+                width: 55px !important;
+                height: 55px !important;
+                font-size: 20px !important;
+                color: #00ffcc !important;
+                cursor: pointer !important;
+                z-index: 25 !important;
+                pointer-events: auto !important;
+                align-items: center !important;
+                justify-content: center !important;
+                transition: all 0.2s ease !important;
+                box-shadow: 0 3px 15px rgba(0, 255, 204, 0.4) !important;
+                /* Remove display: flex and display: block - let JS control visibility */
+            }
+            
+            #mobilePauseBtn:hover, #mobilePauseBtn:active {
+                background: rgba(0, 255, 204, 0.2) !important;
+                border-color: rgba(0, 255, 204, 1) !important;
+                box-shadow: 0 4px 15px rgba(0, 255, 204, 0.5) !important;
+                transform: scale(1.1) !important;
+            }
+        }
+        
+        /* Mobile HUD optimization - More transparent and compact */
         @media (max-width: 767px) {
             #gameHUD {
                 flex-wrap: wrap !important;
-                gap: 5px !important;
-                top: 10px !important;
-                left: 10px !important;
-                right: 10px !important;
+                gap: 3px !important;
+                top: 5px !important;
+                left: 5px !important;
+                right: 5px !important; /* No need for pause button space at top */
             }
             
             #gameHUD > div {
-                flex: 1 1 calc(50% - 5px) !important;
-                min-width: calc(50% - 5px) !important;
-                padding: 8px 10px !important;
+                flex: 1 1 calc(50% - 3px) !important;
+                min-width: calc(50% - 3px) !important;
+                padding: 4px 6px !important;
+                background: rgba(0, 0, 0, 0.3) !important; /* Much more transparent */
+                border: 1px solid rgba(0, 255, 204, 0.3) !important; /* Thinner, more transparent border */
+                border-radius: 6px !important; /* Smaller radius */
             }
             
             #gameHUD span {
-                font-size: 10px !important;
+                font-size: 8px !important; /* Smaller label text */
             }
             
             #gameHUD span:not(.label) {
-                font-size: 16px !important;
+                font-size: 12px !important; /* Smaller value text */
+            }
+            
+            /* Make fuel bar smaller but keep proper fuel level visibility */
+            #gameHUD div:nth-child(2) div {
+                width: 60px !important; /* Smaller fuel bar */
+                height: 12px !important; /* Thinner fuel bar */
+                background: rgba(255, 255, 255, 0.1) !important; /* Container background */
+                border: 1px solid rgba(0, 255, 204, 0.3) !important; /* More visible border */
+            }
+            
+            /* Ensure fuel level bar is visible on mobile - don't override the dynamic colors! */
+            #fuelLevel {
+                opacity: 1 !important; /* Ensure fuel level is visible */
+            }
+        }
+        
+        /* Ultra-compact mobile HUD for very small screens */
+        @media (max-width: 479px) {
+            #gameHUD {
+                gap: 2px !important;
+                top: 3px !important;
+                left: 3px !important;
+                right: 3px !important; /* No need for pause button space */
+            }
+            
+            #gameHUD > div {
+                padding: 3px 5px !important;
+                background: rgba(0, 0, 0, 0.2) !important; /* Even more transparent */
+                border: 1px solid rgba(0, 255, 204, 0.2) !important;
+                border-radius: 4px !important;
+            }
+            
+            #gameHUD span {
+                font-size: 7px !important;
+            }
+            
+            #gameHUD span:not(.label) {
+                font-size: 11px !important;
+            }
+            
+            /* Even smaller fuel bar on tiny screens */
+            #gameHUD div:nth-child(2) div {
+                width: 50px !important;
+                height: 10px !important;
+                background: rgba(255, 255, 255, 0.1) !important; /* Container background */
+                border: 1px solid rgba(0, 255, 204, 0.3) !important;
+            }
+            
+            /* Ensure fuel level is visible on tiny screens too */
+            #fuelLevel {
+                opacity: 1 !important; /* Don't override dynamic background colors */
+            }
+            
+            /* Hide distance to moon on very small screens to save space */
+            #gameHUD > div:nth-child(4) {
+                display: none !important;
+            }
+        }
+        
+        /* Emergency minimal HUD for landscape phones */
+        @media (max-width: 767px) and (max-height: 450px) {
+            #gameHUD {
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 2px !important;
+                top: 2px !important;
+                left: 2px !important;
+                right: 2px !important; /* Full width available */
+            }
+            
+            #gameHUD > div {
+                flex: none !important;
+                min-width: auto !important;
+                padding: 2px 4px !important;
+                background: rgba(0, 0, 0, 0.15) !important;
+                border: 1px solid rgba(0, 255, 204, 0.15) !important;
+            }
+            
+            /* Hide moon distance on landscape to save space */
+            #gameHUD > div:nth-child(4) {
+                display: none !important;
             }
         }
         
@@ -255,11 +412,15 @@
                 flex-direction: column !important;
                 gap: 10px !important;
                 width: 100% !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             
             #pauseOverlay .pause-buttons button {
                 width: 100% !important;
                 max-width: 280px !important;
+                margin: 0 auto !important;
+                display: block !important;
             }
         }
         
@@ -404,6 +565,9 @@
         <button id="shareBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 15px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 10px;">Share on X</button>
         <button id="playAgainBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 20px;">PLAY AGAIN</button>
     </div>
+    
+    <!-- Mobile Pause Button (hidden by default) -->
+    <button id="mobilePauseBtn" style="display: none !important;">⏸️</button>
     
     <div id="gameHUD" style="position: absolute; top: 20px; left: 20px; right: 20px; display: none; justify-content: space-between; align-items: center; pointer-events: none; z-index: 20; font-family: 'Orbitron', monospace;">
         <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center; min-width: 100px;">
