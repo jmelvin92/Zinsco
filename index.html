@@ -25,10 +25,46 @@
             padding: 0; 
             border: none;
         }
+        
+        /* Volume slider styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            border-radius: 5px;
+            background: #333;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ffcc, #00ff88);
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ffcc, #00ff88);
+            cursor: pointer;
+            border: 2px solid #fff;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+    
+    <!-- Background Music -->
+    <audio id="backgroundMusic" loop>
+        <source src="SSP_8BT_90_melodic_stack_laid_back_space_era_Emaj.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
     
     <div id="startScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
         <h1 style="font-size: 4em; color: #00ffcc; margin-bottom: 30px;">ZINSCO'S MOON MISSION</h1>
@@ -41,7 +77,80 @@
             <p>⛽ Collect fuel to keep flying!</p>
             <p>🪙 Collect coins for points!</p>
         </div>
-        <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin: 20px;">START MISSION</button>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+            <button id="startBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 20px 50px; font-size: 24px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">START MISSION</button>
+            <button id="optionsBtn" style="background: linear-gradient(45deg, #666, #999); color: white; border: none; padding: 20px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">OPTIONS</button>
+        </div>
+    </div>
+    
+    <!-- Options Screen -->
+    <div id="optionsScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.95); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 15;">
+        <h2 style="font-size: 3em; color: #00ffcc; margin-bottom: 40px;">OPTIONS</h2>
+        
+        <div style="background: rgba(0, 255, 204, 0.1); border: 2px solid rgba(0, 255, 204, 0.3); border-radius: 15px; padding: 30px; min-width: 400px;">
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-size: 18px; color: #00ffcc; margin-bottom: 15px;">🎵 MUSIC VOLUME</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: #00ff88; font-size: 16px;">🔇</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50" style="flex: 1; height: 8px; border-radius: 5px; background: #333; outline: none; cursor: pointer;">
+                    <span style="color: #00ff88; font-size: 16px;">🔊</span>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px; color: #00ffcc;">Volume: <span id="volumeDisplay">50</span>%</div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-size: 18px; color: #00ffcc; margin-bottom: 15px;">🎮 SOUND EFFECTS VOLUME</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: #00ff88; font-size: 16px;">🔇</span>
+                    <input type="range" id="sfxVolumeSlider" min="0" max="100" value="70" style="flex: 1; height: 8px; border-radius: 5px; background: #333; outline: none; cursor: pointer;">
+                    <span style="color: #00ff88; font-size: 16px;">🔊</span>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px; color: #00ffcc;">Volume: <span id="sfxVolumeDisplay">70</span>%</div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button id="toggleMusicBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 10px 30px; font-size: 16px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 25px; cursor: pointer;">🎵 PAUSE MUSIC</button>
+            </div>
+        </div>
+        
+        <button id="backBtn" style="background: linear-gradient(45deg, #666, #999); color: white; border: none; padding: 15px 40px; font-size: 20px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer; margin-top: 30px;">← BACK</button>
+    </div>
+    
+    <!-- Pause Overlay -->
+    <div id="pauseOverlay" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.95); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 25;">
+        <h2 style="font-size: 3em; color: #00ffcc; margin-bottom: 20px;">⏸️ GAME PAUSED</h2>
+        <p style="font-size: 18px; color: #00ffcc; margin-bottom: 30px;">Press ESC to resume or adjust options below</p>
+        
+        <div style="background: rgba(0, 255, 204, 0.1); border: 2px solid rgba(0, 255, 204, 0.3); border-radius: 15px; padding: 30px; min-width: 400px; margin-bottom: 30px;">
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-size: 18px; color: #00ffcc; margin-bottom: 15px;">🎵 MUSIC VOLUME</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: #00ff88; font-size: 16px;">🔇</span>
+                    <input type="range" id="pauseVolumeSlider" min="0" max="100" value="50" style="flex: 1; height: 8px; border-radius: 5px; background: #333; outline: none; cursor: pointer;">
+                    <span style="color: #00ff88; font-size: 16px;">🔊</span>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px; color: #00ffcc;">Volume: <span id="pauseVolumeDisplay">50</span>%</div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; font-size: 18px; color: #00ffcc; margin-bottom: 15px;">🎮 SOUND EFFECTS VOLUME</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="color: #00ff88; font-size: 16px;">🔇</span>
+                    <input type="range" id="pauseSfxVolumeSlider" min="0" max="100" value="70" style="flex: 1; height: 8px; border-radius: 5px; background: #333; outline: none; cursor: pointer;">
+                    <span style="color: #00ff88; font-size: 16px;">🔊</span>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px; color: #00ffcc;">Volume: <span id="pauseSfxVolumeDisplay">70</span>%</div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button id="pauseToggleMusicBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 10px 30px; font-size: 16px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 25px; cursor: pointer;">🎵 PAUSE MUSIC</button>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+            <button id="resumeBtn" style="background: linear-gradient(45deg, #00ffcc, #00ff88); color: #0a0a0a; border: none; padding: 15px 40px; font-size: 20px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">▶️ RESUME</button>
+            <button id="mainMenuBtn" style="background: linear-gradient(45deg, #ff6600, #ff8800); color: white; border: none; padding: 15px 40px; font-size: 18px; font-weight: 700; font-family: 'Orbitron', monospace; text-transform: uppercase; border-radius: 50px; cursor: pointer;">MAIN MENU</button>
+        </div>
     </div>
     
     <div id="gameOverScreen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: none; flex-direction: column; justify-content: center; align-items: center; background: rgba(10, 10, 10, 0.9); color: white; font-family: 'Orbitron', monospace; text-align: center; z-index: 10;">
