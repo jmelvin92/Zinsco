@@ -174,6 +174,7 @@ class Game {
         canvas.addEventListener('mousedown', () => {
             if (this.state === 'playing' && !this.isPaused) {
                 zinsco.jetpackOn = true;
+                this.hideTutorial(); // Hide tutorial on first interaction
             }
         });
         
@@ -192,6 +193,7 @@ class Game {
             e.preventDefault();
             if (this.state === 'playing' && !this.isPaused) {
                 zinsco.jetpackOn = true;
+                this.hideTutorial(); // Hide tutorial on first interaction
             }
             const rect = canvas.getBoundingClientRect();
             this.mouseX = e.touches[0].clientX - rect.left;
@@ -235,6 +237,47 @@ class Game {
         document.getElementById('optionsScreen').style.display = 'none';
         document.getElementById('gameHUD').style.display = 'flex';
         document.getElementById('mobilePauseBtn').style.display = 'flex'; // Show mobile pause button during gameplay
+        
+        // Show tutorial indicator
+        this.showTutorial();
+    }
+    
+    showTutorial() {
+        const tutorialIndicator = document.getElementById('tutorialIndicator');
+        const tutorialText = document.getElementById('tutorialText');
+        
+        // Set appropriate text for mobile/desktop
+        if (IS_MOBILE) {
+            tutorialText.textContent = 'TAP TO BOOST';
+        } else {
+            tutorialText.textContent = 'CLICK OR TAP TO BOOST';
+        }
+        
+        // Show tutorial
+        tutorialIndicator.style.display = 'block';
+        tutorialIndicator.classList.remove('fade-out');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            tutorialIndicator.classList.add('fade-out');
+            
+            // Remove from DOM after fade animation completes
+            setTimeout(() => {
+                tutorialIndicator.style.display = 'none';
+            }, 1000);
+        }, 5000);
+    }
+    
+    hideTutorial() {
+        const tutorialIndicator = document.getElementById('tutorialIndicator');
+        if (tutorialIndicator && tutorialIndicator.style.display !== 'none') {
+            tutorialIndicator.classList.add('fade-out');
+            
+            // Remove from DOM after fade animation completes
+            setTimeout(() => {
+                tutorialIndicator.style.display = 'none';
+            }, 1000);
+        }
     }
     
     
@@ -790,19 +833,25 @@ class Game {
             ctx.fillStyle = '#ff0000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Warning text
+            // Warning text - mobile responsive font sizes
             ctx.globalAlpha = 1;
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 48px Orbitron, monospace';
+            
+            // Responsive font sizes based on screen width
+            const mainFontSize = IS_MOBILE ? (canvas.width < 400 ? '28px' : '36px') : '48px';
+            const subFontSize = IS_MOBILE ? (canvas.width < 400 ? '18px' : '24px') : '32px';
+            const smallFontSize = IS_MOBILE ? (canvas.width < 400 ? '16px' : '20px') : '28px';
+            
+            ctx.font = `bold ${mainFontSize} Orbitron, monospace`;
             ctx.textAlign = 'center';
             
             if (zinsco.fuel <= 0) {
                 ctx.fillText('NO FUEL - FIND FUEL!', canvas.width / 2, canvas.height / 2 - 40);
-                ctx.font = 'bold 28px Orbitron, monospace';
+                ctx.font = `bold ${smallFontSize} Orbitron, monospace`;
                 ctx.fillText(`Freefall to collect fuel! ${secondsLeft}s left!`, canvas.width / 2, canvas.height / 2 + 20);
             } else {
                 ctx.fillText('OUT OF BOUNDS!', canvas.width / 2, canvas.height / 2 - 40);
-                ctx.font = 'bold 32px Orbitron, monospace';
+                ctx.font = `bold ${subFontSize} Orbitron, monospace`;
                 ctx.fillText(`Return in ${secondsLeft} seconds!`, canvas.width / 2, canvas.height / 2 + 20);
             }
             

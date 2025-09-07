@@ -244,6 +244,45 @@
             }
         }
         
+        /* Tutorial indicator animations */
+        #tutorialIndicator {
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        
+        #tutorialIndicator.fade-out {
+            opacity: 0;
+            transform: translate(-50%, -50%) translateY(-20px);
+        }
+        
+        /* Mobile tutorial adjustments */
+        @media (max-width: 767px) {
+            #tutorialIndicator div:first-child {
+                padding: 15px 25px !important;
+            }
+            
+            #tutorialText {
+                font-size: 20px !important;
+            }
+            
+            #tutorialIndicator div:last-child div:last-child {
+                font-size: 14px !important;
+            }
+        }
+        
+        @media (max-width: 479px) {
+            #tutorialIndicator div:first-child {
+                padding: 12px 20px !important;
+            }
+            
+            #tutorialText {
+                font-size: 18px !important;
+            }
+            
+            #tutorialIndicator div:last-child div:last-child {
+                font-size: 12px !important;
+            }
+        }
+        
         /* Mobile pause button - hidden on desktop */
         #mobilePauseBtn {
             display: none;
@@ -568,6 +607,14 @@
     
     <!-- Mobile Pause Button (hidden by default) -->
     <button id="mobilePauseBtn" style="display: none !important;">⏸️</button>
+    
+    <!-- Tutorial Indicator -->
+    <div id="tutorialIndicator" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; text-align: center; color: white; font-family: 'Orbitron', monospace; z-index: 30; pointer-events: none;">
+        <div style="background: rgba(0, 0, 0, 0.8); border: 2px solid rgba(0, 255, 204, 0.7); border-radius: 15px; padding: 20px 30px; box-shadow: 0 5px 25px rgba(0, 255, 204, 0.4);">
+            <div id="tutorialText" style="font-size: 24px; font-weight: 700; color: #00ffcc; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);">CLICK OR TAP TO BOOST</div>
+            <div style="font-size: 16px; color: #ffffff; opacity: 0.8;">🚀 Hold to fly • Release to fall</div>
+        </div>
+    </div>
     
     <div id="gameHUD" style="position: absolute; top: 20px; left: 20px; right: 20px; display: none; justify-content: space-between; align-items: center; pointer-events: none; z-index: 20; font-family: 'Orbitron', monospace;">
         <div style="background: rgba(0, 0, 0, 0.7); border: 2px solid rgba(0, 255, 204, 0.5); border-radius: 10px; padding: 10px 15px; display: flex; flex-direction: column; align-items: center; min-width: 100px;">
