@@ -1142,6 +1142,15 @@ class Game {
 class Zinsco {
     constructor() {
         this.reset();
+        
+        // Load character image
+        this.characterImage = new Image();
+        this.characterImage.src = 'zinsco_character.png';
+        this.imageLoaded = false;
+        this.characterImage.onload = () => {
+            this.imageLoaded = true;
+            console.log('Zinsco character image loaded successfully');
+        };
     }
     
     reset() {
@@ -1245,55 +1254,96 @@ class Zinsco {
     render(ctx) {
         ctx.save();
         
-        // Draw Zinsco body
-        ctx.fillStyle = '#00ddaa';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        
-        // Draw eyes (original size)
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(this.x + 12, this.y + 15, 6, 0, Math.PI * 2);
-        ctx.arc(this.x + 28, this.y + 15, 6, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = 'black';
-        ctx.beginPath();
-        ctx.arc(this.x + 13, this.y + 15, 3, 0, Math.PI * 2);
-        ctx.arc(this.x + 27, this.y + 15, 3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw jetpack (original size)
-        ctx.fillStyle = '#ff6600';
-        ctx.fillRect(this.x + 5, this.y + 35, 10, 12);
-        ctx.fillRect(this.x + 25, this.y + 35, 10, 12);
-        
-        // Draw flames if jetpack active (original size)
-        if (this.jetpackOn && this.fuel > 0) {
-            ctx.fillStyle = '#ffaa00';
-            const flameHeight = 10 + Math.random() * 10;
-            ctx.fillRect(this.x + 7, this.y + 47, 6, flameHeight);
-            ctx.fillRect(this.x + 27, this.y + 47, 6, flameHeight);
+        if (this.imageLoaded) {
+            // Draw professional character image (same as menu)
+            const aspectRatio = this.characterImage.width / this.characterImage.height;
+            let drawWidth = this.width;
+            let drawHeight = this.height;
             
-            ctx.fillStyle = '#ffff00';
-            ctx.fillRect(this.x + 9, this.y + 47, 2, flameHeight * 0.7);
-            ctx.fillRect(this.x + 29, this.y + 47, 2, flameHeight * 0.7);
+            // Maintain aspect ratio, fit to character bounds
+            if (aspectRatio > drawWidth / drawHeight) {
+                drawHeight = drawWidth / aspectRatio;
+            } else {
+                drawWidth = drawHeight * aspectRatio;
+            }
+            
+            // Center the image within the character bounds
+            const offsetX = (this.width - drawWidth) / 2;
+            const offsetY = (this.height - drawHeight) / 2;
+            
+            ctx.drawImage(
+                this.characterImage, 
+                this.x + offsetX, 
+                this.y + offsetY, 
+                drawWidth, 
+                drawHeight
+            );
+            
+            // Draw jetpack flames if active (positioned for image character)
+            if (this.jetpackOn && this.fuel > 0) {
+                const flameHeight = 10 + Math.random() * 10;
+                const flameOffset = this.height * 0.8; // Position flames at bottom of character
+                
+                ctx.fillStyle = '#ffaa00';
+                ctx.fillRect(this.x + this.width * 0.2, this.y + flameOffset, this.width * 0.15, flameHeight);
+                ctx.fillRect(this.x + this.width * 0.65, this.y + flameOffset, this.width * 0.15, flameHeight);
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(this.x + this.width * 0.225, this.y + flameOffset, this.width * 0.1, flameHeight * 0.7);
+                ctx.fillRect(this.x + this.width * 0.675, this.y + flameOffset, this.width * 0.1, flameHeight * 0.7);
+            }
+            
+        } else {
+            // Fallback to original geometric design while image loads
+            ctx.fillStyle = '#00ddaa';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            // Draw eyes (original size)
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(this.x + 12, this.y + 15, 6, 0, Math.PI * 2);
+            ctx.arc(this.x + 28, this.y + 15, 6, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(this.x + 13, this.y + 15, 3, 0, Math.PI * 2);
+            ctx.arc(this.x + 27, this.y + 15, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw jetpack (original size)
+            ctx.fillStyle = '#ff6600';
+            ctx.fillRect(this.x + 5, this.y + 35, 10, 12);
+            ctx.fillRect(this.x + 25, this.y + 35, 10, 12);
+            
+            // Draw flames if jetpack active (original size)
+            if (this.jetpackOn && this.fuel > 0) {
+                ctx.fillStyle = '#ffaa00';
+                const flameHeight = 10 + Math.random() * 10;
+                ctx.fillRect(this.x + 7, this.y + 47, 6, flameHeight);
+                ctx.fillRect(this.x + 27, this.y + 47, 6, flameHeight);
+                
+                ctx.fillStyle = '#ffff00';
+                ctx.fillRect(this.x + 9, this.y + 47, 2, flameHeight * 0.7);
+                ctx.fillRect(this.x + 29, this.y + 47, 2, flameHeight * 0.7);
+            }
+            
+            // Draw antennas (original size)
+            ctx.strokeStyle = '#00ddaa';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x + 15, this.y);
+            ctx.lineTo(this.x + 15, this.y - 8);
+            ctx.moveTo(this.x + 25, this.y);
+            ctx.lineTo(this.x + 25, this.y - 8);
+            ctx.stroke();
+            
+            ctx.fillStyle = '#00ffcc';
+            ctx.beginPath();
+            ctx.arc(this.x + 15, this.y - 10, 3, 0, Math.PI * 2);
+            ctx.arc(this.x + 25, this.y - 10, 3, 0, Math.PI * 2);
+            ctx.fill();
         }
-        
-        // Draw antennas (original size)
-        ctx.strokeStyle = '#00ddaa';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(this.x + 15, this.y);
-        ctx.lineTo(this.x + 15, this.y - 8);
-        ctx.moveTo(this.x + 25, this.y);
-        ctx.lineTo(this.x + 25, this.y - 8);
-        ctx.stroke();
-        
-        ctx.fillStyle = '#00ffcc';
-        ctx.beginPath();
-        ctx.arc(this.x + 15, this.y - 10, 3, 0, Math.PI * 2);
-        ctx.arc(this.x + 25, this.y - 10, 3, 0, Math.PI * 2);
-        ctx.fill();
         
         // Draw hyper dopamine tracers
         this.tracers.forEach(tracer => {
